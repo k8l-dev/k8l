@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8l
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+      matchLabels:
+        app: k8l
+  template:
+    metadata:
+      labels:
+        app: k8l
+    spec:
+      volumes:
+      - name: k8l-data-volume
+        persistentVolumeClaim:
+          claimName: k8l-data-volume-pvc
+      containers:
+      - image: k8l/k8l:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: k8l-data-volume
+          mountPath: /data
+        name: k8l
+        ports:
+        - containerPort: 9091
+        env:
+        - name: LISTEN
+          value: ":9091"
+        - name: DB
+          value: "/data/data.db"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8l
+  namespace: kube-system
+spec:
+  ports:
+    - port: 9091
+      targetPort: 9091
+      protocol: TCP
+  type: ClusterIP
+  selector:
+    app: k8l
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: k8l-data-volume-pvc
+  namespace: kube-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 100Mi
+---

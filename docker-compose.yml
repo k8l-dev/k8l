@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  k8l:
+    build: .
+    image: docker.io/k8l/k8l:latest
+    ports:
+      - "9091:9091"
+    volumes: 
+      - "./data:/data"
+    environment: 
+      - "LISTEN=:9091"
+      - "DB=/data/data.db"
