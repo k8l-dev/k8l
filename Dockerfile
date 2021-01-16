@@ -19,7 +19,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN go build -a -v -o k8l .
+RUN go build -tags "fts5" -a -v -o k8l .
 
 FROM alpine:3.11.3
 COPY --from=builder /build/k8l .

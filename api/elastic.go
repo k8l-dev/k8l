@@ -1,18 +1,18 @@
 package api
 
 import (
-	"database/sql"
 	"encoding/json"
 	"io"
 	"log"
 
 	"github.com/gin-gonic/gin"
+	. "mogui.it/k8l/persistence"
 )
 
 // BulkHandler Handler for bulk request
 func BulkHandler(c *gin.Context) {
 	d := json.NewDecoder(c.Request.Body)
-
+	var count int = 0
 	for {
 		// Decode one JSON document.
 		var v map[string]interface{}
@@ -29,29 +29,27 @@ func BulkHandler(c *gin.Context) {
 		// Do something with the value.
 		_, isDoc := v["kubernetes"]
 		if isDoc {
-			db := c.MustGet("db").(*sql.DB)
+			repository := c.MustGet("repository").(*LogRepository)
 			kube := v["kubernetes"].(map[string]interface{})
-			stmt, err := db.Prepare(`INSERT INTO logs (namespace_name, container_name, pod_name, container_image, "timestamp", message)
-			VALUES(?, ?, ?, ?, ?, ?);
-			`)
-			if err != nil {
-				log.Fatal(err)
+			record := LogRecord{
+				Namespace: kube["namespace_name"].(string),
+				Container: kube["container_name"].(string),
+				Pod:       kube["pod_name"].(string),
+				Image:     kube["container_image"].(string),
+				Timestamp: v["@timestamp"].(string),
+				Message:   v["log"].(string),
 			}
-
-			_, err = stmt.Exec(kube["namespace_name"],
-				kube["container_name"],
-				kube["pod_name"],
-				kube["container_image"],
-				v["@timestamp"],
-				v["log"])
-
-			if err != nil {
-				log.Println("Not written ", err)
+			if repository.Save(record) {
+				count++
 			}
 		}
 
 	}
-	c.JSON(200, gin.H{
-		"message": "pong",
+	code := 200
+	if count > 0 {
+		code = 201
+	}
+	c.JSON(code, gin.H{
+		"indexed": count,
 	})
 }

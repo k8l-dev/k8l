@@ -3,22 +3,29 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"mogui.it/k8l/api"
-	"mogui.it/k8l/persistence"
+	. "mogui.it/k8l/persistence"
 )
 
-func injectDB(db *sql.DB) gin.HandlerFunc {
+func injectRepository(repository *LogRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set("db", db)
+		c.Set("repository", repository)
 	}
 }
 
 func main() {
+
+	// Setup logger
+	log.SetFormatter(&log.TextFormatter{
+		TimestampFormat:        "2006-01-02 15:04:05",
+		FullTimestamp:          true,
+		DisableLevelTruncation: true,
+	})
 
 	listen := flag.String("listen", ":9090", "where to listen to")
 	dbpath := flag.String("dbpath", "./test.db", "Sqlite database path")
@@ -29,16 +36,18 @@ func main() {
 		log.Fatal("FATAL: opening db ", err)
 	}
 	defer db.Close()
-	persistence.Setup(db)
+	repository := LogRepository{Connection: db}
+	repository.Setup()
 
-	fmt.Println("listen to: ", *listen)
+	log.Info("listen to: ", *listen)
 
 	gin.DisableConsoleColor()
 
 	r := gin.Default()
 
 	r.Use(gin.Recovery())
-	r.Use(injectDB(db))
+	r.Use(injectRepository(&repository))
+
 	r.POST("/_bulk", api.BulkHandler)
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{

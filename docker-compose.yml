@@ -11,3 +11,4 @@ services:
     environment: 
       - "LISTEN=:9091"
       - "DB=/data/data.db"
+      - "GIN_MODE=release"
