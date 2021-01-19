@@ -1,18 +1,18 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
+	"os"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"mogui.it/k8l/api"
-	. "mogui.it/k8l/persistence"
+	p "mogui.it/k8l/persistence"
 )
 
-func injectRepository(repository *LogRepository) gin.HandlerFunc {
+func injectRepository(repository *p.LogRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("repository", repository)
 	}
@@ -26,20 +26,32 @@ func main() {
 		FullTimestamp:          true,
 		DisableLevelTruncation: true,
 	})
-
-	listen := flag.String("listen", ":9090", "where to listen to")
-	dbpath := flag.String("dbpath", "./test.db", "Sqlite database path")
+	var sync string
+	var dataDir string
+	var verbose bool
+	listen := flag.String("listen", ":9090", "address used to expose main API")
+	flag.StringVar(&dataDir, "data", "/tmp/fuck", "data dir")
+	flag.StringVar(&sync, "sync", "127.0.0.1:9001", "listening address for internal database replication")
+	seed := flag.String("seed", "", "database addresses of existing nodes")
+	flag.BoolVar(&verbose, "verbose", false, "verbose log")
 	flag.Parse()
 
-	db, err := sql.Open("sqlite3", *dbpath)
-	if err != nil {
-		log.Fatal("FATAL: opening db ", err)
+	if verbose {
+		log.SetLevel(log.DebugLevel)
 	}
-	defer db.Close()
-	repository := LogRepository{Connection: db}
-	repository.Setup()
+	var join []string = []string{}
+	if *seed != "" {
+		join = []string{*seed}
+	}
 
-	log.Info("listen to: ", *listen)
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		log.Fatal(err)
+	}
+
+	conn, cleanupFunc := p.GetConnection(dataDir, sync, join)
+	defer cleanupFunc()
+	repository := p.LogRepository{Connection: conn}
+	repository.Setup()
 
 	gin.DisableConsoleColor()
 
@@ -54,5 +66,7 @@ func main() {
 			"status": "OK",
 		})
 	})
+	log.Info("listen to: ", *listen)
 	r.Run(*listen)
+
 }

@@ -76,9 +76,9 @@ Vagrant.configure("2") do |config|
     mv go /usr/local
     if [ -z "$GOROOT" ]
     then
-      echo export GOROOT=/usr/local/go >> /home/vagrant/.profile
-      echo export GOPATH=/vagrant >> /home/vagrant/.profile
-      echo export PATH=$GOPATH/bin:$GOROOT/bin:$PATH >> /home/vagrant/.profile
+      echo export GOROOT=/usr/local/go >> /home/vagrant/.bashrc
+      echo export GOPATH=/home/vagrant/go >> /home/vagrant/.bashrc
+      echo export PATH=$GOPATH/bin:$GOROOT/bin:$PATH >> /home/vagrant/.bashrc
 
     else
           echo "\$env vars setted up"

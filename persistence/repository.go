@@ -26,33 +26,35 @@ func (r LogRepository) Setup() {
 	CREATE INDEX IF NOT EXISTS timestamp_idx ON logs(timestamp);
 
 	CREATE VIRTUAL TABLE IF NOT EXISTS logs_fts USING fts5(
-		namespace_name UNINDEXED,
-		container_name,
-		pod_name,
-		container_image,
-		timestamp UNINDEXED,
-		message, 
-		content='logs');		
+		id UNINDEXED,
+			namespace_name UNINDEXED,
+			container_name,
+			pod_name,
+			container_image,
+			timestamp UNINDEXED,
+			message, 
+			content='logs'
+	);
 
-	CREATE TRIGGER logs_ai AFTER INSERT ON logs
-			BEGIN
-					INSERT INTO logs_fts (rowid, logsname, short_description)
-					VALUES (new.id, new.logsname, new.short_description);
-			END;
+	CREATE TRIGGER IF NOT EXISTS logs_ai AFTER INSERT ON logs
+		BEGIN
+			INSERT INTO logs_fts (container_name, pod_name, container_image, message)
+			VALUES (new.container_name, new.pod_name, new.container_image, new.message);
+		END;
 
-	CREATE TRIGGER logs_ad AFTER DELETE ON logs
-			BEGIN
-					INSERT INTO logs_fts (logs_fts, rowid, logsname, short_description)
-					VALUES ('delete', old.id, old.logsname, old.short_description);
-			END;
+	CREATE TRIGGER IF NOT EXISTS logs_ad AFTER DELETE ON logs
+		BEGIN
+			INSERT INTO logs_fts (logs_fts, container_name, pod_name, container_image, message)
+			VALUES ('delete', old.container_name, old.pod_name, old.container_image, old.message);
+		END;
 
-	CREATE TRIGGER logs_au AFTER UPDATE ON logs
-			BEGIN
-					INSERT INTO logs_fts (logs_fts, rowid, logsname, short_description)
-					VALUES ('delete', old.id, old.logsname, old.short_description);
-					INSERT INTO logs_fts (rowid, logsname, short_description)
-					VALUES (new.id, new.logsname, new.short_description);
-			END;
+	CREATE TRIGGER IF NOT EXISTS logs_au AFTER UPDATE ON logs
+		BEGIN
+			INSERT INTO logs_fts (logs_fts, container_name, pod_name, container_image, message)
+			VALUES ('delete', old.container_name, old.pod_name, old.container_image, old.message);
+			INSERT INTO logs_fts (container_name, pod_name, container_image, message)
+			VALUES (new.container_name, new.pod_name, new.container_image, new.message);
+		END;
 				`)
 	if err != nil {
 		log.Fatal("Setup failed ", err)
