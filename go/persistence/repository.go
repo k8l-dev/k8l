@@ -6,6 +6,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Storage is the object enclosing all the repository
+type Storage struct {
+	LogRepository *LogRepository
+}
+
+// STORAGE is the global object
+var STORAGE Storage
+
 // LogRepository is the main interface to save roecords on sqlite
 type LogRepository struct {
 	Connection *sql.DB
@@ -59,6 +67,30 @@ func (r LogRepository) Setup() {
 	if err != nil {
 		log.Fatal("Setup failed ", err)
 	}
+}
+
+// GetLogs returns logs
+func (r LogRepository) GetLogs(namespace string, container string) []LogRecord {
+	logs := make([]LogRecord, 0)
+	rows, err := r.Connection.Query("SELECT namespace_name, container_name, pod_name, container_image, timestamp, message FROM logs WHERE namespace_name = ? AND container_name = ?", namespace, container)
+	if err != nil {
+		log.Error("Cannot insert log record", err)
+	}
+
+	defer rows.Close()
+	log.Info(">>>>")
+	for rows.Next() {
+		var entry LogRecord
+		err := rows.Scan(&entry.Namespace, &entry.Container, &entry.Pod,
+			&entry.Image, &entry.Timestamp, &entry.Message)
+		log.Info("asd", entry)
+		if err != nil {
+			log.Error(err)
+		}
+		logs = append(logs, entry)
+	}
+
+	return logs
 }
 
 // Save a record on sqlite

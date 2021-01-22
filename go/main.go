@@ -16,6 +16,7 @@ import (
 func injectRepository(repository *p.LogRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("repository", repository)
+		c.Next()
 	}
 }
 
@@ -53,13 +54,13 @@ func main() {
 	defer cleanupFunc()
 	repository := p.LogRepository{Connection: conn}
 	repository.Setup()
-
+	p.STORAGE.LogRepository = &repository
 	gin.DisableConsoleColor()
 
 	r := api.NewRouter()
-
+	//r.Use(injectRepository(&repository))
 	r.Use(gin.Recovery())
-	r.Use(injectRepository(&repository))
+
 	r.Use(static.Serve("/", static.LocalFile("./static", false)))
 
 	r.POST("/_bulk", api.BulkHandler)

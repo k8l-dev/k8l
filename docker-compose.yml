@@ -21,7 +21,7 @@ services:
     environment: 
       - "LISTEN=:9091"
       - "DB=/data/9001"
-      - "GIN_MODE=release"
+      # - "GIN_MODE=release"
       - "OTHER=-verbose -sync 10.1.0.101:9001"
     networks:
       test:
@@ -37,7 +37,7 @@ services:
     environment: 
       - "LISTEN=:9092"
       - "DB=/data/9002"
-      - "GIN_MODE=release"
+      # - "GIN_MODE=release"
       - "OTHER=-verbose -sync 10.1.0.102:9002 -seed k8l:9001"
     networks:
       test:

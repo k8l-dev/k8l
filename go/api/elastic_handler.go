@@ -29,7 +29,7 @@ func BulkHandler(c *gin.Context) {
 		// Do something with the value.
 		_, isDoc := v["kubernetes"]
 		if isDoc {
-			repository := c.MustGet("repository").(*p.LogRepository)
+			repository := p.STORAGE.LogRepository
 			kube := v["kubernetes"].(map[string]interface{})
 			record := p.LogRecord{
 				Namespace: kube["namespace_name"].(string),
