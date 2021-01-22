@@ -1,14 +1,60 @@
 version: '3'
-
+networks:
+  test:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.1.0.0/24
 services:
+  
   k8l:
     build: .
     image: docker.io/k8l/k8l:latest
     ports:
       - "9091:9091"
+      - "9001:9001"
+    volumes: 
+      - "./data:/data"
+    extra_hosts: 
+      - "k8l:127.0.0.1"
+    environment: 
+      - "LISTEN=:9091"
+      - "DB=/data/9001"
+      - "GIN_MODE=release"
+      - "OTHER=-verbose -sync 10.1.0.101:9001"
+    networks:
+      test:
+        ipv4_address: '10.1.0.101'
+  
+  k8l2:
+    build: .
+    image: docker.io/k8l/k8l:latest
+    ports:
+      - "9092:9092"
     volumes: 
       - "./data:/data"
     environment: 
-      - "LISTEN=:9091"
-      - "DB=/data/data.db"
+      - "LISTEN=:9092"
+      - "DB=/data/9002"
       - "GIN_MODE=release"
+      - "OTHER=-verbose -sync 10.1.0.102:9002 -seed k8l:9001"
+    networks:
+      test:
+        ipv4_address: '10.1.0.102'
+  k8l3:
+    build: .
+    image: docker.io/k8l/k8l:latest
+    ports:
+      - "9093:9093"
+    volumes: 
+      - "./data:/data"
+    environment: 
+      - "LISTEN=:9093"
+      - "DB=/data/9003"
+      - "GIN_MODE=release"
+      - "OTHER=-verbose -sync 10.1.0.103:9003 -seed k8l:9001"
+    networks:
+      test:
+        ipv4_address: '10.1.0.103'
+  

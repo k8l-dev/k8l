@@ -35,3 +35,4 @@
 .vagrant
 compose.db.session.sql
 data
+.openapi-generator

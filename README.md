@@ -29,3 +29,4 @@ When your cluster doesn't need all the features of the ELK stack, but you just n
 
 - retention control
 - live tail of logs with websocket
+- configurable table clustering  `all`, `namespace`, `resource`

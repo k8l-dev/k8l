@@ -1,0 +1,115 @@
+openapi: 3.0.0
+info:
+  title: k8l
+  version: '1.0'
+  description: "Kubernetes light logs API"
+  contact:
+    email: mogui83@gmail.com
+    name: mogui
+servers:
+- url: https://localhost:8081/api
+  description: default server
+paths:
+  /logs/{namespace}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/from'
+      - $ref: '#/components/parameters/to'
+      - $ref: '#/components/parameters/match'
+    get:
+      summary: Logs for a namespace
+      description: Get logs for a given namespace if clustering configuraiton consents
+      tags:
+        - "Logs"
+      operationId: get-namespace-logs
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogEntry'
+  /logs/{namespace}/{container}:
+    parameters:
+      - $ref: '#/components/parameters/namespace'
+      - $ref: '#/components/parameters/container'
+      - $ref: '#/components/parameters/from'
+      - $ref: '#/components/parameters/to'
+      - $ref: '#/components/parameters/match'
+    get:
+      summary: Logs for a container
+      description: Get logs for a given namespace if clustering configuraiton consents
+      tags:
+        - "Logs"
+      operationId: get-resource-logs
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LogEntry'
+components:
+  parameters:
+    namespace:
+      name: namespace
+      schema:
+        type: string
+      in: path
+      required: true
+      description: "namespace"
+    container:
+      name: container
+      schema:
+        type: string
+      in: path
+      required: true
+      description: "container"
+    from:
+      name: from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    to:
+      name: to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    match:
+      name: match
+      in: query
+      required: false
+      schema:
+        type: string
+  
+  schemas:
+    LogEntry:
+      title: LogEntry
+      type: object
+      description: 'A Log Entry'
+      example: {"timestamp": "2021-01-14T09:51:36.874826606+00:00", "namespace": "default", "container": "testecho", "pod": "testecho-84bf8797c8-jdfsf", "message": "Thu, 14 Jan 2021 09:51:36 GMT | [GET] - http://echoserver.cluster.local/echo"}
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        namespace:
+          type: string
+        container:
+          type: string
+        pod:
+          type: string
+        message:
+          type: string
+          
+          
+          
+          
+          

@@ -6,10 +6,11 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
-	"mogui.it/k8l/api"
-	p "mogui.it/k8l/persistence"
+	"mogui.it/k8l/go/api"
+	p "mogui.it/k8l/go/persistence"
 )
 
 func injectRepository(repository *p.LogRepository) gin.HandlerFunc {
@@ -55,10 +56,11 @@ func main() {
 
 	gin.DisableConsoleColor()
 
-	r := gin.Default()
+	r := api.NewRouter()
 
 	r.Use(gin.Recovery())
 	r.Use(injectRepository(&repository))
+	r.Use(static.Serve("/", static.LocalFile("./static", false)))
 
 	r.POST("/_bulk", api.BulkHandler)
 	r.GET("/", func(c *gin.Context) {

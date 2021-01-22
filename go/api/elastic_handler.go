@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	p "mogui.it/k8l/persistence"
+	p "mogui.it/k8l/go/persistence"
 )
 
 // BulkHandler Handler for bulk request
