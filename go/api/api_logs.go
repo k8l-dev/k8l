@@ -12,10 +12,8 @@ package api
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	p "mogui.it/k8l/go/persistence"
 )
 
@@ -29,22 +27,6 @@ func GetNamespaceLogs(c *gin.Context) {
 func GetResourceLogs(c *gin.Context) {
 	repository := p.STORAGE.LogRepository
 	logs := repository.GetLogs(c.Param("namespace"), c.Param("container"))
-	mapped := make([]LogEntry, 0)
-	for _, val := range logs {
-		log.Error(val.Timestamp)
-		t, err := time.Parse("2006-01-02T15:04:05.000000000+00:00", val.Timestamp)
-		if err != nil {
-			log.Error(err)
-			continue
-		}
-		e := LogEntry{
-			Namespace: val.Namespace,
-			Container: val.Container,
-			Pod:       val.Pod,
-			Message:   val.Message,
-			Timestamp: t,
-		}
-		mapped = append(mapped, e)
-	}
+	mapped := mapModelToDTO(logs)
 	c.JSON(http.StatusOK, mapped)
 }

@@ -7,5 +7,6 @@
 .openapi-generator
 api/openapi.yaml
 api/README.md
+api/api_logs.go
 Dockerfile
 main.go
