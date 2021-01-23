@@ -27,6 +27,13 @@ paths:
                 items:
                   type: string
   /namespace/{namespace}:
+    parameters:
+      - name: namespace
+        schema:
+          type: string
+        in: path
+        required: true
+        description: "namespace"
     get:
       summary: Get Containers for a given namespace
       description: Get Containers for a given namespace

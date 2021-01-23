@@ -64,6 +64,20 @@ var routes = Routes{
 	},
 
 	{
+		"GetContainers",
+		http.MethodGet,
+		"/api/namespace/:namespace",
+		GetContainers,
+	},
+
+	{
+		"GetNamespaces",
+		http.MethodGet,
+		"/api/namespace",
+		GetNamespaces,
+	},
+
+	{
 		"GetNamespaceLogs",
 		http.MethodGet,
 		"/api/logs/:namespace",

@@ -1,5 +1,5 @@
 generate:
-	npx @openapitools/openapi-generator-cli generate -s -g go-gin-server -p apiPath=api -p packageName=api -i static/openapi.yaml -o go
+	npx @openapitools/openapi-generator-cli generate -g go-gin-server -p apiPath=api -p packageName=api -i static/openapi.yaml -o go
 
 build: 
 	go build -o k8l go/main.go

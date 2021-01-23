@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -12,14 +12,14 @@ import (
 
 // BulkHandler Handler for bulk request
 func BulkHandler(c *gin.Context) {
-	jsonData, _ := ioutil.ReadAll(c.Request.Body)
-	log.Debug(string(jsonData))
+
 	d := json.NewDecoder(c.Request.Body)
 	var count int = 0
 	for {
 		// Decode one JSON document.
 		var v map[string]interface{}
 		err := d.Decode(&v)
+		log.Debug("------>", v)
 
 		if err != nil {
 			// io.EOF is expected at end of stream.
@@ -32,8 +32,9 @@ func BulkHandler(c *gin.Context) {
 		_, isKubeLog := v["kubernetes"]
 		_, isGenericLog := v["container_name"]
 		repository := p.STORAGE.LogRepository
-
+		log.Debug("------>", isGenericLog, isKubeLog, v)
 		if isKubeLog {
+			log.Debug("Is Kubernetes record")
 			kube := v["kubernetes"].(map[string]interface{})
 			record := p.LogRecord{
 				Namespace: kube["namespace_name"].(string),
@@ -47,9 +48,10 @@ func BulkHandler(c *gin.Context) {
 				count++
 			}
 		} else if isGenericLog {
+			log.Debug("Is generic record")
 			record := p.LogRecord{
 				Namespace: "_generic",
-				Container: v["container_name"].(string),
+				Container: strings.ReplaceAll(v["container_name"].(string), "/", "-"),
 				Pod:       "",
 				Image:     "",
 				Timestamp: v["@timestamp"].(string),
