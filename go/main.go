@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"net/http"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -40,6 +41,8 @@ func main() {
 
 	if verbose {
 		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.InfoLevel)
 	}
 	var join []string = []string{}
 	if *seed != "" {
@@ -58,15 +61,17 @@ func main() {
 	gin.DisableConsoleColor()
 
 	r := api.NewRouter()
+
 	//r.Use(injectRepository(&repository))
 	r.Use(gin.Recovery())
 
-	r.Use(static.Serve("/", static.LocalFile("./static", false)))
+	r.Use(static.Serve("/static", static.LocalFile("./static", false)))
+	r.LoadHTMLGlob("./templates/*.tmpl.html")
 
 	r.POST("/_bulk", api.BulkHandler)
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "OK",
+		c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
+			"title": "Home",
 		})
 	})
 	log.Info("listen to: ", *listen)

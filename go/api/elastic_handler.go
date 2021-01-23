@@ -3,14 +3,17 @@ package api
 import (
 	"encoding/json"
 	"io"
-	"log"
+	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	p "mogui.it/k8l/go/persistence"
 )
 
 // BulkHandler Handler for bulk request
 func BulkHandler(c *gin.Context) {
+	jsonData, _ := ioutil.ReadAll(c.Request.Body)
+	log.Debug(string(jsonData))
 	d := json.NewDecoder(c.Request.Body)
 	var count int = 0
 	for {
@@ -26,16 +29,29 @@ func BulkHandler(c *gin.Context) {
 			break
 		}
 
-		// Do something with the value.
-		_, isDoc := v["kubernetes"]
-		if isDoc {
-			repository := p.STORAGE.LogRepository
+		_, isKubeLog := v["kubernetes"]
+		_, isGenericLog := v["container_name"]
+		repository := p.STORAGE.LogRepository
+
+		if isKubeLog {
 			kube := v["kubernetes"].(map[string]interface{})
 			record := p.LogRecord{
 				Namespace: kube["namespace_name"].(string),
 				Container: kube["container_name"].(string),
 				Pod:       kube["pod_name"].(string),
 				Image:     kube["container_image"].(string),
+				Timestamp: v["@timestamp"].(string),
+				Message:   v["log"].(string),
+			}
+			if repository.Save(record) {
+				count++
+			}
+		} else if isGenericLog {
+			record := p.LogRecord{
+				Namespace: "_generic",
+				Container: v["container_name"].(string),
+				Pod:       "",
+				Image:     "",
 				Timestamp: v["@timestamp"].(string),
 				Message:   v["log"].(string),
 			}

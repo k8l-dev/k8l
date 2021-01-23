@@ -12,8 +12,10 @@ package api
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	p "mogui.it/k8l/go/persistence"
 )
 
@@ -28,5 +30,20 @@ func GetResourceLogs(c *gin.Context) {
 	repository := p.STORAGE.LogRepository
 	logs := repository.GetLogs(c.Param("namespace"), c.Param("container"))
 	mapped := mapModelToDTO(logs)
-	c.JSON(http.StatusOK, mapped)
+	// log.Debug(c.Request.URL.Query())
+	// jsonString, _ := json.Marshal(c.Request.URL.Query())
+	// log.Debug(string(jsonString))
+	// log.Debug(c.Request.URL.Query().Get("order[0][column]"))
+	draw, err := strconv.Atoi(c.DefaultQuery("draw", "1"))
+	if err != nil {
+		draw = 1
+	}
+	ret := gin.H{
+		"draw":            draw,
+		"recordsTotal":    int32(len(mapped)),
+		"recordsFiltered": int32(len(mapped)),
+		"data":            mapped,
+	}
+	log.Debug(ret)
+	c.JSON(http.StatusOK, ret)
 }

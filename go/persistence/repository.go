@@ -69,6 +69,48 @@ func (r LogRepository) Setup() {
 	}
 }
 
+// GetNamespaces returns all the namespaces sotred
+func (r LogRepository) GetNamespaces() []string {
+	namespaces := make([]string, 0)
+	rows, err := r.Connection.Query("SELECT DISTINCT namespace_name FROM logs order by namespace_name")
+	if err != nil {
+		log.Error("Cannot retrieve namespaces", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var entry string
+		err := rows.Scan(&entry)
+		if err != nil {
+			log.Error(err)
+		}
+		namespaces = append(namespaces, entry)
+	}
+
+	return namespaces
+}
+
+// GetContainers returns all the containers for a given namespace
+func (r LogRepository) GetContainers(namespace string) []string {
+	containers := make([]string, 0)
+	rows, err := r.Connection.Query("SELECT DISTINCT container_name FROM logs WHERE namespace_name = ? ORDER BY container_name", namespace)
+	if err != nil {
+		log.Error("Cannot retrieve containers", err)
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var entry string
+		err := rows.Scan(&entry)
+		if err != nil {
+			log.Error(err)
+		}
+		containers = append(containers, entry)
+	}
+
+	return containers
+}
+
 // GetLogs returns logs
 func (r LogRepository) GetLogs(namespace string, container string) []LogRecord {
 	logs := make([]LogRecord, 0)
@@ -78,12 +120,10 @@ func (r LogRepository) GetLogs(namespace string, container string) []LogRecord {
 	}
 
 	defer rows.Close()
-	log.Info(">>>>")
 	for rows.Next() {
 		var entry LogRecord
 		err := rows.Scan(&entry.Namespace, &entry.Container, &entry.Pod,
 			&entry.Image, &entry.Timestamp, &entry.Message)
-		log.Info("asd", entry)
 		if err != nil {
 			log.Error(err)
 		}

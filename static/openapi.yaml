@@ -10,6 +10,38 @@ servers:
 - url: https://localhost:8081/api
   description: default server
 paths:
+  /namespace:
+    get:
+      summary: Get All Namespaces
+      description: Get All Namespaces
+      tags:
+        - "Lists"
+      operationId: get-namespaces
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /namespace/{namespace}:
+    get:
+      summary: Get Containers for a given namespace
+      description: Get Containers for a given namespace
+      tags:
+        - "Lists"
+      operationId: get-containers
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
   /logs/{namespace}:
     parameters:
       - $ref: '#/components/parameters/namespace'
@@ -50,10 +82,43 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/LogEntry'
+                type: object
+                $ref: '#/components/schemas/LogResponse'
+                
 components:
+  schemas:
+    LogEntry:
+      title: LogEntry
+      type: object
+      description: 'A Log Entry'
+      example: {"timestamp": "2021-01-14T09:51:36.874826606+00:00", "namespace": "default", "container": "testecho", "pod": "testecho-84bf8797c8-jdfsf", "message": "Thu, 14 Jan 2021 09:51:36 GMT | [GET] - http://echoserver.cluster.local/echo"}
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        namespace:
+          type: string
+        container:
+          type: string
+        pod:
+          type: string
+        message:
+          type: string
+    LogResponse:
+      title: main log response
+      type: object
+      properties:
+        draw:
+          type: integer
+        recordsTotal:
+          type: integer
+        recordsFiltered:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogEntry'
+
   parameters:
     namespace:
       name: namespace
@@ -90,24 +155,7 @@ components:
       schema:
         type: string
   
-  schemas:
-    LogEntry:
-      title: LogEntry
-      type: object
-      description: 'A Log Entry'
-      example: {"timestamp": "2021-01-14T09:51:36.874826606+00:00", "namespace": "default", "container": "testecho", "pod": "testecho-84bf8797c8-jdfsf", "message": "Thu, 14 Jan 2021 09:51:36 GMT | [GET] - http://echoserver.cluster.local/echo"}
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        namespace:
-          type: string
-        container:
-          type: string
-        pod:
-          type: string
-        message:
-          type: string
+  
           
           
           
