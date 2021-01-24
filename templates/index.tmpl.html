@@ -10,24 +10,39 @@
 <body>
   <section class="section">
     <div class="container">
-      <h1 class="title">
-        Hello World
-      </h1>
-      <p class="subtitle">
-        My first website with <strong>Bulma</strong>!
-      </p>
-      <div>
-        <select name="namespace" id="namespace">
-          <option value="echoserver">echoserver</option>
-          <option value="default" selected>default</option>
-        </select>
-      </div>
-      <table id="logs" class="display" style="width:100%">
+      
+      <div class="mb-8 columns">
+        <div class="column is-one-quarter">
+          <h1 class="title">
+            k8l
+          </h1>
+          <p class="subtitle">
+            Lightweight Kubernetes logs!
+          </p>
+        </div>
+        <div class="column is-one-quarter">
+          <label class="label">Namespace</label>
+          <div class="select">
+            <select name="namespace" id="namespace">
+              <option value="echoserver">echoserver</option>
+              <option value="default" selected>default</option>
+            </select>
+          </div>
+        </div>
+        <div class="column is-one-quarter">
+          <label class="label">Container</label>
+          <div class="select">
+            <select name="container" id="container">
+              
+            </select>
+          </div>
+        </div>
+      </div> 
+      <hr />
+      <table id="logs" class="display table" style="width:100%">
         <thead>
             <tr>
                 <th>Timestamp</th>
-                <th>Namespace</th>
-                <th>Container</th>
                 <th>Pod</th>
                 <th>Message</th>
             </tr>
@@ -35,8 +50,6 @@
         <tfoot>
             <tr>
               <th>Timestamp</th>
-              <th>Namespace</th>
-              <th>Container</th>
               <th>Pod</th>
               <th>Message</th>
             </tr>
@@ -53,18 +66,48 @@
       var table = $('#logs').DataTable( {
           "processing": true,
           "serverSide": true,
-          "ajax": "/api/logs/"+$('#namespace').val()+"/testecho",
+          "ajax": "/api/logs/"+$('#namespace').val()+"/"+$('#container').val(),
           "columns": [
             { "data": "timestamp" },
-            { "data": "namespace" },
-            { "data": "container" },
             { "data": "pod" },
             { "data": "message" }
         ]
       } );
-      $('#namespace').change(function() {
-        table.ajax.url( "/api/logs/"+$('#namespace').val()+"/testecho" ).load();
+
+      // 
+
+      // load namespaces
+      $.ajax({
+        url:"/api/namespace",
+        dataType: 'json',
+        success:function(json){
+          $('#namespace').html(' ');
+          $.each(json, function(i, value) {
+            $('#namespace').append($('<option>').text(value).attr('value', value));
+          });
+          $('#namespace').trigger('change');
+        }
       });
+
+      $('#namespace').change(function() {
+        $.ajax({
+          url:"/api/namespace/"+$('#namespace').val(),
+          dataType: 'json',
+          success:function(json){
+            $('#container').html(' ');
+            $.each(json, function(i, value) {
+              $('#container').append($('<option>').text(value).attr('value', value));
+            });
+            table.ajax.url( "/api/logs/"+$('#namespace').val()+"/"+$('#container').val() ).load();
+          }
+        });
+      });
+
+      $('#container').change(function() {
+        table.ajax.url( "/api/logs/"+$('#namespace').val()+"/"+$('#container').val() ).load();
+      });
+
+
     } );
   </script>
 </body>

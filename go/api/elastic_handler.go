@@ -48,12 +48,13 @@ func BulkHandler(c *gin.Context) {
 				count++
 			}
 		} else if isGenericLog {
-			log.Debug("Is generic record")
+			log.Debug("Is generic record", v)
+
 			record := p.LogRecord{
 				Namespace: "_generic",
 				Container: strings.ReplaceAll(v["container_name"].(string), "/", "-"),
-				Pod:       "",
-				Image:     "",
+				Pod:       v["container_id"].(string),
+				Image:     " ",
 				Timestamp: v["@timestamp"].(string),
 				Message:   v["log"].(string),
 			}

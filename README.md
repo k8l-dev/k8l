@@ -15,16 +15,6 @@ When your cluster doesn't need all the features of the ELK stack, but you just n
 - [https://avologo.com/]
 - not very much really
 
-## MVP
-
-- ingestion endpoint  
-  - `/_bulk` act liek ES
-- yaml resource e/o helm chart
-- REST api
-- UI
-  - filter indexed search
-  - fulltext search
-
 ## Roadmap
 
 - retention control

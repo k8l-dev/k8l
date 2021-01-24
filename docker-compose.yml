@@ -51,6 +51,20 @@ services:
     networks:
       test:
         ipv4_address: '10.1.0.101'
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: localhost:24224
+    links:
+      - fluentd
+    networks:
+      - test
   
   # k8l2:
   #   build: .
