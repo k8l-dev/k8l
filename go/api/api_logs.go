@@ -15,7 +15,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	log "github.com/sirupsen/logrus"
 	p "mogui.it/k8l/go/persistence"
 )
 
@@ -28,7 +27,25 @@ func GetNamespaceLogs(c *gin.Context) {
 // GetResourceLogs - Logs for a container
 func GetResourceLogs(c *gin.Context) {
 	repository := p.STORAGE.LogRepository
-	logs := repository.GetLogs(c.Param("namespace"), c.Param("container"))
+	start := c.DefaultQuery("start", "0")
+	length := c.DefaultQuery("length", "10")
+	var orderColumn int
+
+	orderColumn, err := strconv.Atoi(c.DefaultQuery("order[0][column]", "0"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	orderDir := c.DefaultQuery("order[0][dir]", "desc")
+	columns := []string{"timestamp", "container_name", "message"}
+
+	match := c.Query("search[value]")
+
+	count, logs := repository.GetLogs(c.Param("namespace"),
+		c.Param("container"), start, length, columns[orderColumn], orderDir, match)
 	mapped := mapModelToDTO(logs)
 	// log.Debug(c.Request.URL.Query())
 	// jsonString, _ := json.Marshal(c.Request.URL.Query())
@@ -41,9 +58,9 @@ func GetResourceLogs(c *gin.Context) {
 	ret := gin.H{
 		"draw":            draw,
 		"recordsTotal":    int32(len(mapped)),
-		"recordsFiltered": int32(len(mapped)),
+		"recordsFiltered": count,
 		"data":            mapped,
 	}
-	log.Debug(ret)
+
 	c.JSON(http.StatusOK, ret)
 }

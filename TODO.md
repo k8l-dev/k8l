@@ -5,8 +5,9 @@
   - [x] Retriecve namespaces and container
   - [x] Retrieve logs for namespace/container
   - [ ] Retrieve logs for namespace
-  - [ ] implement filters and limits
-  - [ ] implement full text search
+  - [ ] Filter logs for single pod
+  - [x] implement filters and limits
+  - [x] implement full text search
 - UI
   - [x] Basic with DataTable
   - [ ] Implement permalink

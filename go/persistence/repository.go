@@ -111,12 +111,32 @@ func (r LogRepository) GetContainers(namespace string) []string {
 	return containers
 }
 
+func (r LogRepository) query(query string, args ...interface{}) (*sql.Rows, error) {
+	log.Println(query, args)
+	return r.Connection.Query(query, args...)
+}
+
 // GetLogs returns logs
-func (r LogRepository) GetLogs(namespace string, container string) []LogRecord {
+func (r LogRepository) GetLogs(namespace string, container string, start string, length string, orderColumn string, orderDir string, match string) (int, []LogRecord) {
 	logs := make([]LogRecord, 0)
-	rows, err := r.Connection.Query("SELECT namespace_name, container_name, pod_name, container_image, timestamp, message FROM logs WHERE namespace_name = ? AND container_name = ?", namespace, container)
+	selectQuery := "SELECT namespace_name, container_name, pod_name, container_image, timestamp, message FROM logs "
+
+	where := "WHERE namespace_name = ? AND container_name = ? "
+	if match != "" {
+		where += "AND id IN (SELECT id FROM logs_fts WHERE logs_fts MATCH '" + match + "' )"
+	}
+
+	selectQuery += where
+	if orderDir == "asc" {
+		selectQuery += "ORDER BY " + orderColumn + " ASC "
+	} else {
+		selectQuery += "ORDER BY " + orderColumn + " DESC "
+	}
+	selectQuery += "LIMIT ? OFFSET ?;"
+	rows, err := r.query(selectQuery, namespace, container, length, start)
 	if err != nil {
-		log.Error("Cannot insert log record", err)
+		log.Error("Cannot get log record ", err)
+		return 0, logs
 	}
 
 	defer rows.Close()
@@ -129,8 +149,10 @@ func (r LogRepository) GetLogs(namespace string, container string) []LogRecord {
 		}
 		logs = append(logs, entry)
 	}
-
-	return logs
+	row := r.Connection.QueryRow("SELECT count(*) FROM logs "+where, namespace, container)
+	var count int
+	row.Scan(&count)
+	return count, logs
 }
 
 // Save a record on sqlite

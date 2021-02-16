@@ -52,9 +52,11 @@ paths:
   /logs/{namespace}:
     parameters:
       - $ref: '#/components/parameters/namespace'
-      - $ref: '#/components/parameters/from'
-      - $ref: '#/components/parameters/to'
-      - $ref: '#/components/parameters/match'
+      - $ref: '#/components/parameters/start'
+      - $ref: '#/components/parameters/length'
+      - $ref: '#/components/parameters/search'
+      - $ref: '#/components/parameters/order_column'
+      - $ref: '#/components/parameters/order_dir'
     get:
       summary: Logs for a namespace
       description: Get logs for a given namespace if clustering configuraiton consents
@@ -74,9 +76,11 @@ paths:
     parameters:
       - $ref: '#/components/parameters/namespace'
       - $ref: '#/components/parameters/container'
-      - $ref: '#/components/parameters/from'
-      - $ref: '#/components/parameters/to'
-      - $ref: '#/components/parameters/match'
+      - $ref: '#/components/parameters/start'
+      - $ref: '#/components/parameters/length'
+      - $ref: '#/components/parameters/search'
+      - $ref: '#/components/parameters/order_column'
+      - $ref: '#/components/parameters/order_dir'
     get:
       summary: Logs for a container
       description: Get logs for a given namespace if clustering configuraiton consents
@@ -141,22 +145,34 @@ components:
       in: path
       required: true
       description: "container"
-    from:
-      name: from
+    start:
+      name: start
       in: query
       required: false
       schema:
         type: string
         format: date-time
-    to:
-      name: to
+    length:
+      name: length
       in: query
       required: false
       schema:
         type: string
         format: date-time
-    match:
-      name: match
+    search:
+      name: search[value]
+      in: query
+      required: false
+      schema:
+        type: string
+    order_column:
+      name: order[0][column]
+      in: query
+      required: false
+      schema:
+        type: integer
+    order_dir:
+      name: order[0][dir]
       in: query
       required: false
       schema:

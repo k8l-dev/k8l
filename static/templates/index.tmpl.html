@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.0/css/bulma.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">
+  <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.bulma.min.css"> -->
   <title>k8l - {{ .title }}</title>
 </head>
 <body>
@@ -39,18 +40,16 @@
         </div>
       </div> 
       <hr />
-      <table id="logs" class="display table" style="width:100%">
+      <table id="logs" class="display stripe" style="width:100%">
         <thead>
             <tr>
                 <th>Timestamp</th>
-                <th>Pod</th>
                 <th>Message</th>
             </tr>
         </thead>
         <tfoot>
             <tr>
               <th>Timestamp</th>
-              <th>Pod</th>
               <th>Message</th>
             </tr>
         </tfoot>
@@ -60,7 +59,7 @@
   </section>
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
-  <!-- <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script> -->
+  <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script> -->
   <script>
     $(document).ready(function() {
       var table = $('#logs').DataTable( {
@@ -68,8 +67,7 @@
           "serverSide": true,
           "ajax": "/api/logs/"+$('#namespace').val()+"/"+$('#container').val(),
           "columns": [
-            { "data": "timestamp" },
-            { "data": "pod" },
+            { "data": "timestamp", "width": "20px" },
             { "data": "message" }
         ]
       } );

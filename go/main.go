@@ -31,9 +31,11 @@ func main() {
 	})
 	var sync string
 	var dataDir string
+	var staticDir string
 	var verbose bool
 	listen := flag.String("listen", ":9090", "address used to expose main API")
 	flag.StringVar(&dataDir, "data", "/tmp/fuck", "data dir")
+	flag.StringVar(&staticDir, "static", "./static", "Static data dir dir")
 	flag.StringVar(&sync, "sync", "127.0.0.1:9001", "listening address for internal database replication")
 	seed := flag.String("seed", "", "database addresses of existing nodes")
 	flag.BoolVar(&verbose, "verbose", false, "verbose log")
@@ -65,8 +67,8 @@ func main() {
 	//r.Use(injectRepository(&repository))
 	r.Use(gin.Recovery())
 
-	r.Use(static.Serve("/static", static.LocalFile("./static", false)))
-	r.LoadHTMLGlob("./templates/*.tmpl.html")
+	r.Use(static.Serve("/static", static.LocalFile(staticDir, false)))
+	r.LoadHTMLGlob(staticDir + "/templates/*.tmpl.html")
 
 	r.POST("/_bulk", api.BulkHandler)
 	r.GET("/", func(c *gin.Context) {
