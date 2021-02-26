@@ -34,6 +34,7 @@ COPY go go
 
 # Build the application
 RUN go build -tags libsqlite3,dqlite -a -o k8l ./go
+# RUN go build -tags libsqlite3 -a -o k8l ./go
 
 FROM alpine:3.11.3
 
@@ -41,6 +42,5 @@ RUN apk add sqlite-dev libuv-dev
 COPY --from=builder /build/k8l /usr/bin/k8l
 COPY --from=builder /usr/local/lib/libraft* /usr/lib/
 COPY --from=builder /usr/local/lib/libdqlite* /usr/lib/
-COPY ./templates /templates
 COPY ./static /static
 CMD k8l -listen $LISTEN -data $DB $OTHER

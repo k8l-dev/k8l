@@ -11,5 +11,5 @@
 - UI
   - [x] Basic with DataTable
   - [ ] Implement permalink
-  - [ ] fulltext search highlightning
+  - [x] fulltext search highlightning
 - [ ] yaml resource e/o helm chart
