@@ -66,34 +66,34 @@ services:
     networks:
       - test
   
-  # k8l2:
-  #   build: .
-  #   image: docker.io/k8l/k8l:latest
-  #   ports:
-  #     - "9092:9092"
-  #   volumes: 
-  #     - "./data:/data"
-  #   environment: 
-  #     - "LISTEN=:9092"
-  #     - "DB=/data/9002"
-  #     # - "GIN_MODE=release"
-  #     - "OTHER=-verbose -sync 10.1.0.102:9002 -seed k8l:9001"
-  #   networks:
-  #     test:
-  #       ipv4_address: '10.1.0.102'
-  # k8l3:
-  #   build: .
-  #   image: docker.io/k8l/k8l:latest
-  #   ports:
-  #     - "9093:9093"
-  #   volumes: 
-  #     - "./data:/data"
-  #   environment: 
-  #     - "LISTEN=:9093"
-  #     - "DB=/data/9003"
-  #     - "GIN_MODE=release"
-  #     - "OTHER=-verbose -sync 10.1.0.103:9003 -seed k8l:9001"
-  #   networks:
-  #     test:
-  #       ipv4_address: '10.1.0.103'
+  k8l2:
+    build: .
+    image: docker.io/k8l/k8l:latest
+    ports:
+      - "9092:9092"
+    volumes: 
+      - "./data:/data"
+    environment: 
+      - "LISTEN=:9092"
+      - "DB=/data/9002"
+      # - "GIN_MODE=release"
+      - "OTHER=-verbose -sync 10.1.0.102:9002 -seed k8l:9001"
+    networks:
+      test:
+        ipv4_address: '10.1.0.102'
+  k8l3:
+    build: .
+    image: docker.io/k8l/k8l:latest
+    ports:
+      - "9093:9093"
+    volumes: 
+      - "./data:/data"
+    environment: 
+      - "LISTEN=:9093"
+      - "DB=/data/9003"
+      - "GIN_MODE=release"
+      - "OTHER=-verbose -sync 10.1.0.103:9003 -seed k8l:9001"
+    networks:
+      test:
+        ipv4_address: '10.1.0.103'
   
