@@ -1,6 +1,7 @@
 # TODO.md
 
 - [x] ingestion endpoint `/_bulk` act like Elastic Search
+- [ ] liveness and rediness probes
 - REST api
   - [x] Retrieve namespaces and container
   - [x] Retrieve logs for namespace/container

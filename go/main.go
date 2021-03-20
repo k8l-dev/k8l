@@ -32,11 +32,15 @@ func main() {
 	var sync string
 	var dataDir string
 	var staticDir string
+	var certificate string
+	var key string
 	var verbose bool
 	listen := flag.String("listen", ":9090", "address used to expose main API")
 	flag.StringVar(&dataDir, "data", "/tmp/fuck", "data dir")
 	flag.StringVar(&staticDir, "static", "./static", "Static data dir dir")
-	flag.StringVar(&sync, "sync", "127.0.0.1:9001", "listening address for internal database replication")
+	flag.StringVar(&certificate, "cert", "cluster.crt", "tls certificate file")
+	flag.StringVar(&key, "key", "cluster.key", "tls  key file")
+	flag.StringVar(&sync, "sync", "", "listening address for internal database replication default if empty is first interface :9000")
 	seed := flag.String("seed", "", "database addresses of existing nodes")
 	flag.BoolVar(&verbose, "verbose", false, "verbose log")
 	flag.Parse()
@@ -55,7 +59,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	conn, cleanupFunc := p.GetConnection(dataDir, sync, join)
+	conn, cleanupFunc := p.GetConnection(dataDir, sync, certificate, key, join)
 	defer cleanupFunc()
 	repository := p.LogRepository{Connection: conn}
 	repository.Setup()

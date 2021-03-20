@@ -10,7 +10,7 @@ import (
 )
 
 // GetConnection as
-func GetConnection(dataDir string, sync string, join []string) (*sql.DB, func()) {
+func GetConnection(dataDir string, sync string, certificate string, key string, join []string) (*sql.DB, func()) {
 	db, err := sql.Open("sqlite3", path.Join(dataDir, "k8l.db"))
 	if err != nil {
 		log.Fatal("FATAL: opening db ", err)

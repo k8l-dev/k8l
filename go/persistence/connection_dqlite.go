@@ -4,22 +4,36 @@ package persistence
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"database/sql"
 	"fmt"
-	"log"
-
 	"github.com/canonical/go-dqlite/app"
 	"github.com/canonical/go-dqlite/client"
+	"io/ioutil"
+	"log"
 )
 
 // GetConnection as
-func GetConnection(dataDir string, sync string, join []string) (*sql.DB, func()) {
+func GetConnection(dataDir string, sync string, certificate string, key string, join []string) (*sql.DB, func()) {
 	logFunc := func(l client.LogLevel, format string, a ...interface{}) {
 		log.Printf(fmt.Sprintf("%s: %s\n", l.String(), format), a...)
 	}
-	app, err := app.New(dataDir, app.WithAddress(sync), app.WithCluster(join), app.WithLogFunc(logFunc))
+
+	cert, err := tls.LoadX509KeyPair(certificate, key)
 	if err != nil {
-		log.Fatal("Cannot create app", err)
+		log.Fatal("Failed loading key pair ", err)
+	}
+	if err != nil {
+		log.Fatal("Failed reading cert ", err)
+	}
+	data, err := ioutil.ReadFile(certificate)
+	pool := x509.NewCertPool()
+	pool.AppendCertsFromPEM(data)
+
+	app, err := app.New(dataDir, app.WithTLS(app.SimpleTLSConfig(cert, pool)), app.WithAddress(sync), app.WithCluster(join), app.WithLogFunc(logFunc))
+	if err != nil {
+		log.Fatal("Cannot create app ", err)
 	}
 
 	if err := app.Ready(context.Background()); err != nil {
