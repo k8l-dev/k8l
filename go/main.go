@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"os"
 
-	log "github.com/sirupsen/logrus"
-
+	"github.com/fvbock/endless"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 	"mogui.it/k8l/go/api"
 	p "mogui.it/k8l/go/persistence"
 )
@@ -35,11 +35,12 @@ func main() {
 	var certificate string
 	var key string
 	var verbose bool
-	listen := flag.String("listen", ":9090", "address used to expose main API")
-	flag.StringVar(&dataDir, "data", "/tmp/fuck", "data dir")
+	var listen string
+	flag.StringVar(&listen, "listen", ":9090", "address used to expose main API")
+	flag.StringVar(&dataDir, "data", "/var/data", "data dir")
 	flag.StringVar(&staticDir, "static", "./static", "Static data dir dir")
-	flag.StringVar(&certificate, "cert", "cluster.crt", "tls certificate file")
-	flag.StringVar(&key, "key", "cluster.key", "tls  key file")
+	flag.StringVar(&certificate, "cert", "/var/run/certs/cluster.crt", "tls certificate file")
+	flag.StringVar(&key, "key", "/var/run/certs/cluster.key", "tls key file")
 	flag.StringVar(&sync, "sync", "", "listening address for internal database replication default if empty is first interface :9000")
 	seed := flag.String("seed", "", "database addresses of existing nodes")
 	flag.BoolVar(&verbose, "verbose", false, "verbose log")
@@ -65,7 +66,6 @@ func main() {
 	repository.Setup()
 	p.STORAGE.LogRepository = &repository
 	gin.DisableConsoleColor()
-
 	r := api.NewRouter()
 
 	//r.Use(injectRepository(&repository))
@@ -80,7 +80,7 @@ func main() {
 			"title": "Home",
 		})
 	})
-	log.Info("listen to: ", *listen)
-	r.Run(*listen)
+	log.Info("Listening on: ", listen)
+	endless.ListenAndServe(listen, r)
 
 }

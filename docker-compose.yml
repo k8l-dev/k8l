@@ -1,11 +1,4 @@
 version: '3'
-networks:
-  test:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.1.0.0/24
 services:
   web:
     image: httpd
@@ -18,9 +11,6 @@ services:
       options:
         fluentd-address: localhost:24224
         tag: httpd.access
-    networks:
-      test:
-        ipv4_address: '10.1.0.202'
   fluentd:
     build: ./fluentd
     volumes:
@@ -30,9 +20,6 @@ services:
     ports:
       - "24224:24224" 
       - "24224:24224/udp"
-    networks:
-      test:
-        ipv4_address: '10.1.0.201'
   k8l:
     build: .
     image: docker.io/k8l/k8l:latest
@@ -40,17 +27,30 @@ services:
       - "9091"
     ports:
       - "9091:9091"
-      - "9001:9001"
     volumes: 
       - "./data:/data"
+      - "./certs:/var/run/certs"
     environment: 
-      - "LISTEN=:9091"
-      - "DB=/data/9001"
       - "GIN_MODE=release"
-      - "OTHER=-verbose -sync 10.1.0.101:9001"
-    networks:
-      test:
-        ipv4_address: '10.1.0.101'
+    command:
+      - "-listen=:9091"
+      - "-sync=k8l:9001" 
+  k8l-2:
+    build: .
+    image: docker.io/k8l/k8l:latest
+    expose:
+      - "9091"
+    ports:
+      - "9092:9092"
+    volumes: 
+      - "./data:/data"
+      - "./certs:/var/run/certs"
+    environment: 
+      - "GIN_MODE=release"
+    command:
+      - "-listen=:9092"
+      - "-seed=k8l:9001" 
+    
   zookeeper:
     image: 'bitnami/zookeeper:latest'
     ports:
@@ -63,37 +63,4 @@ services:
         fluentd-address: localhost:24224
     links:
       - fluentd
-    networks:
-      - test
-  
-  k8l2:
-    build: .
-    image: docker.io/k8l/k8l:latest
-    ports:
-      - "9092:9092"
-    volumes: 
-      - "./data:/data"
-    environment: 
-      - "LISTEN=:9092"
-      - "DB=/data/9002"
-      # - "GIN_MODE=release"
-      - "OTHER=-verbose -sync 10.1.0.102:9002 -seed k8l:9001"
-    networks:
-      test:
-        ipv4_address: '10.1.0.102'
-  k8l3:
-    build: .
-    image: docker.io/k8l/k8l:latest
-    ports:
-      - "9093:9093"
-    volumes: 
-      - "./data:/data"
-    environment: 
-      - "LISTEN=:9093"
-      - "DB=/data/9003"
-      - "GIN_MODE=release"
-      - "OTHER=-verbose -sync 10.1.0.103:9003 -seed k8l:9001"
-    networks:
-      test:
-        ipv4_address: '10.1.0.103'
   

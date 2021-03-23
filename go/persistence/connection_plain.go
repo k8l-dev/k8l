@@ -17,6 +17,7 @@ func GetConnection(dataDir string, sync string, certificate string, key string, 
 	}
 
 	cleanup := func() {
+		log.Debug("Closing connections")
 		db.Close()
 	}
 	return db, cleanup

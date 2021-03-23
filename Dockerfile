@@ -43,4 +43,4 @@ COPY --from=builder /build/k8l /usr/bin/k8l
 COPY --from=builder /usr/local/lib/libraft* /usr/lib/
 COPY --from=builder /usr/local/lib/libdqlite* /usr/lib/
 COPY ./static /static
-CMD k8l -listen $LISTEN -data $DB $OTHER
+ENTRYPOINT [ "k8l" ]
