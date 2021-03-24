@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/canonical/go-dqlite v1.8.0
 	github.com/fatih/color v1.10.0 // indirect
+	github.com/fvbock/endless v0.0.0-20170109170031-447134032cb6 // indirect
 	github.com/gin-contrib/static v0.0.0-20200916080430-d45d9a37d28e // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/githubnemo/CompileDaemon v1.2.1 // indirect
