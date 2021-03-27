@@ -66,23 +66,45 @@ Vagrant.configure("2") do |config|
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-    add-apt-repository ppa:dqlite/stable
-    apt-get update
-    apt-get install -y libdqlite-dev build-essential docker docker-compose
-    udo usermod -aG docker vagrant
     cd /tmp
-    wget https://dl.google.com/go/go1.15.2.linux-amd64.tar.gz 
-    tar -xvf go1.15.2.linux-amd64.tar.gz
-    mv go /usr/local
-    if [ -z "$GOROOT" ]
-    then
+    go_url=https://dl.google.com/go/go1.15.2.linux-amd64.tar.gz
+    go_ark=$(basename $go_url)
+    helm_url=https://get.helm.sh/helm-v3.5.3-linux-amd64.tar.gz
+
+    export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+    sudo add-apt-repository ppa:dqlite/stable -y
+    sudo apt-get update -y
+    sudo apt-get install -y libdqlite-dev build-essential docker docker-compose
+    sudo usermod -aG docker vagrant
+    
+    curl -sL $go_url -o $go_ark 
+    ls go || tar -xvf $go_ark
+    ls /usr/local/go &> /dev/null || sudo mv go /usr/local
+    
+    if [ -z "$GOROOT" ];then
       echo export GOROOT=/usr/local/go >> /home/vagrant/.bashrc
       echo export GOPATH=/home/vagrant/go >> /home/vagrant/.bashrc
       echo export PATH=$GOPATH/bin:$GOROOT/bin:$PATH >> /home/vagrant/.bashrc
-
     else
-          echo "\$env vars setted up"
+      echo "\$env vars setted up"
     fi
-    curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" sh -s - --docker
+
+    which k3s || curl -sfL https://get.k3s.io | sh -
+
+    which helm || (curl -sL $helm_url -o $(basename $helm_url) && \
+      tar -xvf helm-v3.5.3-linux-amd64.tar.gz && \
+      sudo cp ./linux-amd64/helm /usr/local/bin/ && \
+      sudo chmod 775 /usr/local/bin/helm)
+
+    helm list &> /dev/null || sudo chown vagrant:root /etc/rancher/k3s/k3s.yaml
+    kubectl get pods -l app.kubernetes.io/name=ingress-nginx | grep nginx &> /dev/null
+
+    if [ "$?" -ne 0 ];then
+      helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+      helm repo update
+      helm install ingress-nginx ingress-nginx/ingress-nginx
+    fi
+
   SHELL
 end
